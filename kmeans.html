@@ -1,0 +1,135 @@
+<html>
+<head>
+    <title>K-Means Clustering</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.dom.min.js"></script>
+</head>
+<body>
+    <h1>K-Means Clustering</h1>
+    <p>Masukkan jumlah klaster (k) dan klik tombol "Mulai" untuk menjalankan algoritma k-means clustering.</p>
+    <input id="k-input" type="number" value="3" min="1" max="10">
+    <button id="start-button">Mulai</button>
+    <div id="sketch-holder"></div>
+    <script>
+   // Variabel global
+        let data = []; // Array untuk menyimpan data
+        let centroids = []; // Array untuk menyimpan pusat klaster
+        let k; // Jumlah klaster
+        let colors = ["red", "green", "blue", "yellow", "magenta", "cyan", "orange", "purple", "pink", "brown"]; // Array untuk menyimpan warna klaster
+        let changed = false; // Variabel untuk mengecek apakah ada perubahan pada klaster
+
+        // Fungsi untuk menginisialisasi data secara acak
+        function initializeData() {
+            data = [];
+            for (let i = 0; i < 100; i++) {
+                let x = random(width);
+  let y = random(height);
+                let label = -1;
+                data.push({x: x, y: y, label: label});
+            }
+        }
+
+        // Fungsi untuk menginisialisasi pusat klaster secara acak
+        function initializeCentroids() {
+            centroids = [];
+            for (let i = 0; i < k; i++) {
+                let x = random(width);
+                let y = random(height);
+                centroids.push({x: x, y: y, color: colors[i]});
+            }
+        }
+  // Fungsi untuk menghitung jarak antara dua titik
+        function distance(a, b) {
+            return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+        }
+
+        // Fungsi untuk mengelompokkan data berdasarkan pusat klaster terdekat
+        function assignCluster() {
+            changed = false;
+            for (let i = 0; i < data.length; i++) {
+                let minDist = Infinity;
+                let minIndex = -1;
+                for (let j = 0; j < centroids.length; j++) {
+                    let dist = distance(data[i], centroids[j]);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        minIndex = j;
+                    }
+                }
+      if (data[i].label != minIndex) {
+                    data[i].label = minIndex;
+                    changed = true;
+                }
+            }
+        }
+
+        // Fungsi untuk memperbarui pusat klaster berdasarkan rata-rata data dalam klaster
+        function updateCentroids() {
+            for (let i = 0; i < centroids.length; i++) {
+                let sumX = 0;
+                let sumY = 0;
+                let count = 0;
+                for (let j = 0; j < data.length; j++) {
+                    if (data[j].label == i) {
+                        sumX += data[j].x;
+                        sumY += data[j].y;
+                        count++;
+                    }
+                }
+  if (count > 0) {
+                    centroids[i].x = sumX / count;
+                    centroids[i].y = sumY / count;
+                }
+            }
+        }
+
+        // Fungsi untuk menggambar data dan pusat klaster
+        function drawData() {
+            background(255);
+            for (let i = 0; i < data.length; i++) {
+                fill(colors[data[i].label]);
+                ellipse(data[i].x, data[i].y, 10, 10);
+            }
+            for (let i = 0; i < centroids.length; i++) {
+  fill(centroids[i].color);
+                strokeWeight(2);
+                stroke(0);
+                ellipse(centroids[i].x, centroids[i].y, 20, 20);
+            }
+        }
+
+        // Fungsi yang dipanggil saat pertama kali menjalankan program
+        function setup() {
+            let canvas = createCanvas(600, 400);
+            canvas.parent("sketch-holder");
+            k = 3;
+            initializeData();
+            initializeCentroids();
+            drawData();
+        }
+// Fungsi yang dipanggil secara berulang untuk menggambar ulang
+        function draw() {
+            if (changed) {
+                assignCluster();
+                updateCentroids();
+                drawData();
+            }
+        }
+
+        // Fungsi yang dipanggil saat tombol "Mulai" diklik
+        function startClustering() {
+            k = parseInt(document.getElementById("k-input").value);
+            if (k > 0 && k <= 10) {
+                initializeData();
+                initializeCentroids();
+                changed = true;
+            } else {
+   alert("Masukkan nilai k antara 1 dan 10");
+            }
+        }
+
+        // Menambahkan event listener pada tombol "Mulai"
+        document.getElementById("start-button").addEventListener("click", startClustering);
+    </script>
+</body>
+</html>
